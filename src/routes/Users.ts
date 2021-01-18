@@ -5,6 +5,7 @@ import {
   saveUser,
   editUser,
   authUser,
+  listUsers,
 } from './../controllers/UserController';
 
 import { Router, Request, Response, response } from 'express';
@@ -16,9 +17,15 @@ const userRouter = Router();
 userRouter
   .route('/')
   .get(async (req: Request, res: Response) => {
-    await UserModel.find({}, (err, users) => {
-      res.json(users);
-    });
+    let disabled = <Boolean>(<unknown>req.query.disabled);
+
+    listUsers({ disabled })
+      .then((users) => {
+        res.json(users);
+      })
+      .catch((err) => {
+        return res.status(500).json({ error: true, message: err.message });
+      });
   })
   .post(async (req: Request, res: Response) => {
     const { name, password, email }: IUser = req.body;

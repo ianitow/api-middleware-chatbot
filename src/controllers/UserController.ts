@@ -4,6 +4,16 @@ import { ObjectId, Types, Query, SchemaTypes } from 'mongoose';
 import jwt from 'jsonwebtoken';
 import { compare } from 'bcrypt';
 
+export const listUsers = ({ disabled = false }: { disabled: Boolean }) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      resolve(await UserModel.find({ disabled }));
+    } catch (err) {
+      reject({ error: true, message: <Error>err.message });
+    }
+  });
+};
+
 export const authUser = ({
   email,
   password,
