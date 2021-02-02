@@ -12,9 +12,13 @@ const productRouter = Router();
 productRouter
   .route('/')
   .get(async (req: Request, res: Response) => {
-    await ProductModel.find({}, (err, products) => {
-      res.json(products);
-    });
+    const showProductsDisabled: any = req.params.disabled || false;
+    await ProductModel.find(
+      { disabled: showProductsDisabled },
+      (err, products) => {
+        res.json(products);
+      }
+    );
   })
   .post(async (req: Request, res: Response) => {
     const { name, size, quantity, price }: IProduct = req.body;
