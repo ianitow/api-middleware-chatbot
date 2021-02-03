@@ -1,38 +1,55 @@
+import { Router, Request, Response } from 'express';
 import ProductModel, { IProduct } from './../models/ProductModel';
 import {
   createProduct,
   deleteProduct,
   editProduct,
 } from './../controllers/ProductController';
-
-import { Router, Request, Response } from 'express';
+import {
+  IErrorProduct as IError,
+  ERROR_PRODUCT_ENUMS,
+} from '../controllers/ProductController';
 
 const productRouter = Router();
-
 productRouter
   .route('/')
   .get(async (req: Request, res: Response) => {
     const showProductsDisabled: any = req.params.disabled || false;
+    let errorMessage: IError;
     await ProductModel.find(
       { disabled: showProductsDisabled },
       (err, products) => {
+        if (err) {
+          errorMessage = {
+            type: ERROR_PRODUCT_ENUMS.UNKNOWN,
+            message: err.message,
+          };
+          return res.status(500).json(errorMessage);
+        }
         res.json(products);
       }
     );
   })
   .post(async (req: Request, res: Response) => {
+    let errorMessage: IError;
     const { name, size, quantity, price }: IProduct = req.body;
     if (!name || !size || !quantity || !price) {
-      return res.status(400).json({ error: true, message: 'Data invalid!' });
+      errorMessage = {
+        type: ERROR_PRODUCT_ENUMS.PRODUCT_DATA_INVALID,
+        status: 400,
+      };
+      return res.status(400).json(errorMessage);
     } else {
       createProduct({ name, size, quantity, price })
         .then((user) => {
           return res.status(201).json(user);
         })
         .catch((error) => {
-          return res
-            .status(error.status)
-            .json({ error: true, message: error.message });
+          errorMessage = {
+            type: ERROR_PRODUCT_ENUMS.UNKNOWN,
+            message: error.message,
+          };
+          return res.status(error.status).json(errorMessage);
         });
     }
   });
@@ -41,25 +58,36 @@ productRouter
   .put(async (req: Request, res: Response) => {
     const { id }: IProduct['_id'] = req.params;
     const { name, size, quantity, price }: IProduct = req.body;
+    let errorMessage: IError;
+
     if (!name || !size || !quantity || !price) {
-      return res.status(400).json({ error: true, message: 'Data invalid!' });
+      errorMessage = {
+        type: ERROR_PRODUCT_ENUMS.PRODUCT_DATA_INVALID,
+      };
+      return res.status(400).json(errorMessage);
     } else {
       editProduct({ id, name, size, quantity, price })
         .then((user) => {
           return res.status(200).json(user);
         })
         .catch((error) => {
-          return res
-            .status(error.status)
-            .json({ error: true, message: error.message });
+          errorMessage = {
+            type: error.type || ERROR_PRODUCT_ENUMS.UNKNOWN,
+            message: error.message,
+          };
+          return res.status(error.status).json(errorMessage);
         });
     }
   })
   .delete(async (req: Request, res: Response) => {
     const { id }: IProduct['_id'] = req.params;
+    let errorMessage: IError;
 
     if (!id) {
-      return res.status(400).json({ error: true, message: 'Data invalid!' });
+      errorMessage = {
+        type: ERROR_PRODUCT_ENUMS.PRODUCT_DATA_INVALID,
+      };
+      return res.status(400).json(errorMessage);
     } else {
       deleteProduct({ id })
         .then(() => {
@@ -68,9 +96,11 @@ productRouter
             .json({ message: 'Product deleted successfully.' });
         })
         .catch((error) => {
-          return res
-            .status(error.status)
-            .json({ error: true, message: error.message });
+          errorMessage = {
+            type: error.type || ERROR_PRODUCT_ENUMS.UNKNOWN,
+            message: error.message,
+          };
+          return res.status(error.status).json(errorMessage);
         });
     }
   });
