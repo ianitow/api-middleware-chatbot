@@ -26,20 +26,24 @@ export const authUser = ({
     if (!isExists) {
       return reject({ status: 404, message: 'Email not exists' });
     }
-    await compare(password, <string>isExists.password, (err) => {
+
+    await compare(password, <string>isExists.password, async (err, same) => {
       if (err) {
-        return reject({
-          status: 401,
-          message: 'Email or password is incorrect',
+        reject({
+          status: 500,
+          message: 'Internal Server error',
         });
       }
+      if (!same) {
+        reject({ status: '401', message: 'Password invalid' });
+      } else {
+        const token = jwt.sign(
+          { userId: isExists._id, email: email },
+          <string>process.env.SECRET
+        );
+        resolve(token);
+      }
     });
-    // const token = jwt.sign(
-    //   { userId: _id, email: email },
-    //   <string>process.env.SECRET
-    // );
-
-    resolve({});
   });
 };
 
@@ -50,7 +54,7 @@ export const saveUser = (user: IUser) => {
       return reject({ status: 409, message: 'Email already in use!' });
     }
     const UserObject: IUser = new UserModel(user);
-    console.log(UserObject);
+
     UserObject.save()
       .then(() => {
         UserObject.password = undefined;

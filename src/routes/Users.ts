@@ -1,3 +1,4 @@
+import { ERROR_USER_ENUMS, IErrorUsers } from './../helpers/UsersErrors';
 import { verifyJWT } from './../middlewares/checkJwt';
 import { IUser, UserProperties } from './../models/UserModel';
 import {
@@ -17,69 +18,102 @@ const userRouter = Router();
 userRouter
   .route('/')
   .get(async (req: Request, res: Response) => {
-    let disabled = <Boolean>(<unknown>req.query.disabled);
-
-    listUsers({ disabled })
+    let errorMessage: IErrorUsers;
+    const showUsersDisabled: any = req.params.disabled || false;
+    listUsers({ disabled: showUsersDisabled })
       .then((users) => {
         res.json(users);
       })
       .catch((err) => {
-        return res.status(500).json({ error: true, message: err.message });
+        errorMessage = {
+          type: err.type,
+          message: err.message,
+          status: err.status || 500,
+        };
+        return res.status(<number>errorMessage.status).json(errorMessage);
       });
   })
   .post(async (req: Request, res: Response) => {
+    let errorMessage: IErrorUsers;
     const { name, password, email }: IUser = req.body;
     if (!name || !password || !email) {
-      return res.status(400).json({ error: true, message: 'Data invalid!' });
+      errorMessage = {
+        type: ERROR_USER_ENUMS.DATA_INVALID,
+        message: 'Data invalid!',
+        status: 400,
+      };
+      return res.status(<number>errorMessage.status).json(errorMessage);
     } else {
       saveUser(req.body)
         .then((user) => {
           return res.status(201).json(user);
         })
-        .catch((error) => {
-          return res
-            .status(error.status)
-            .json({ error: true, message: error.message });
+        .catch((err) => {
+          errorMessage = {
+            type: err.type,
+            message: err.message,
+            status: err.status || 500,
+          };
+          return res.status(<number>errorMessage.status).json(errorMessage);
         });
     }
   });
 
 userRouter.route('/token').post(async (req: Request, res: Response) => {
+  let errorMessage: IErrorUsers;
   const { password, email }: UserProperties = req.body;
   authUser({ email, password })
     .then((token) => {
-      res.json({ authorization: token });
+      res.status(200).json({ authorization: token });
     })
-    .catch((error) => {
-      return res
-        .status(error.status)
-        .json({ error: true, message: error.message });
+    .catch((err) => {
+      errorMessage = {
+        type: err.type,
+        message: err.message,
+        status: err.status || 500,
+      };
+      return res.status(<number>errorMessage.status).json(errorMessage);
     });
 });
 userRouter
   .route('/:id')
   .put(async (req: Request, res: Response) => {
+    let errorMessage: IErrorUsers;
     const { id }: IUser['_id'] = req.params;
     const { name, password, address, number_phone, email }: IUser = req.body;
     if (!id) {
-      return res.status(400).json({ error: true, message: 'Data invalid!' });
+      errorMessage = {
+        type: ERROR_USER_ENUMS.DATA_INVALID,
+        message: 'Data invalid!',
+        status: 400,
+      };
+      return res.status(<number>errorMessage.status).json(errorMessage);
     } else {
       editUser({ id, name, password, address, number_phone, email })
         .then((user) => {
           return res.status(200).json(user);
         })
-        .catch((error) => {
-          return res
-            .status(error.status)
-            .json({ error: true, message: error.message });
+        .catch((err) => {
+          errorMessage = {
+            type: err.type,
+            message: err.message,
+            status: err.status || 500,
+          };
+          return res.status(<number>errorMessage.status).json(errorMessage);
         });
     }
   })
   .delete(async (req: Request, res: Response) => {
+    let errorMessage: IErrorUsers;
     const { id }: IUser['_id'] = req.params;
 
     if (!id) {
-      return res.status(400).json({ error: true, message: 'Data invalid!' });
+      errorMessage = {
+        type: ERROR_USER_ENUMS.DATA_INVALID,
+        message: 'Data invalid!',
+        status: 400,
+      };
+      return res.status(<number>errorMessage.status).json(errorMessage);
     } else {
       deleteUser(id)
         .then(() => {
@@ -87,10 +121,13 @@ userRouter
             .status(204)
             .json({ message: 'User deleted successfully.' });
         })
-        .catch((error) => {
-          return res
-            .status(error.status)
-            .json({ error: true, message: error.message });
+        .catch((err) => {
+          errorMessage = {
+            type: err.type,
+            message: err.message,
+            status: err.status || 500,
+          };
+          return res.status(<number>errorMessage.status).json(errorMessage);
         });
     }
   });

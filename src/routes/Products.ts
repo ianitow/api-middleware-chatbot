@@ -1,3 +1,4 @@
+import { ERROR_PRODUCT_ENUMS } from './../helpers/ProductErrors';
 import { Router, Request, Response } from 'express';
 import ProductModel, { IProduct } from './../models/ProductModel';
 import {
@@ -5,17 +6,14 @@ import {
   deleteProduct,
   editProduct,
 } from './../controllers/ProductController';
-import {
-  IErrorProduct as IError,
-  ERROR_PRODUCT_ENUMS,
-} from '../controllers/ProductController';
+import { IErrorProduct } from '../helpers/ProductErrors';
 
 const productRouter = Router();
 productRouter
   .route('/')
   .get(async (req: Request, res: Response) => {
     const showProductsDisabled: any = req.params.disabled || false;
-    let errorMessage: IError;
+    let errorMessage: IErrorProduct;
     await ProductModel.find(
       { disabled: showProductsDisabled },
       (err, products) => {
@@ -31,7 +29,7 @@ productRouter
     );
   })
   .post(async (req: Request, res: Response) => {
-    let errorMessage: IError;
+    let errorMessage: IErrorProduct;
     const { name, size, quantity, price }: IProduct = req.body;
     if (!name || !size || !quantity || !price) {
       errorMessage = {
@@ -58,7 +56,7 @@ productRouter
   .put(async (req: Request, res: Response) => {
     const { id }: IProduct['_id'] = req.params;
     const { name, size, quantity, price }: IProduct = req.body;
-    let errorMessage: IError;
+    let errorMessage: IErrorProduct;
 
     if (!name || !size || !quantity || !price) {
       errorMessage = {
@@ -81,7 +79,7 @@ productRouter
   })
   .delete(async (req: Request, res: Response) => {
     const { id }: IProduct['_id'] = req.params;
-    let errorMessage: IError;
+    let errorMessage: IErrorProduct;
 
     if (!id) {
       errorMessage = {

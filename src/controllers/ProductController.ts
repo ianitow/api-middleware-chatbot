@@ -1,17 +1,8 @@
+import ProductModel from '../models/ProductModel';
+import { IErrorProduct } from '../helpers/ProductErrors';
+import { ERROR_PRODUCT_ENUMS } from '../helpers/ProductErrors';
 import { IProduct } from './../models/ProductModel';
 import { Types } from 'mongoose';
-import ProductModel from '../models/ProductModel';
-export enum ERROR_PRODUCT_ENUMS {
-  PRODUCT_NOT_FOUND = 'PRODUCT_NOT_FOUND',
-  PRODUCT_NOT_EXISTS = 'PRODUCT_NOT_EXISTS',
-  PRODUCT_DATA_INVALID = 'PRODUCT_DATA_INVALID',
-  UNKNOWN = 'UNKNOWN',
-}
-export interface IErrorProduct {
-  type: ERROR_PRODUCT_ENUMS;
-  status?: number;
-  message?: string;
-}
 
 export const createProduct = ({
   name,
@@ -112,7 +103,6 @@ export const deleteProduct = ({ id }: IProduct['_id']) => {
       if (!isExists) {
         errorMessage = {
           type: ERROR_PRODUCT_ENUMS.PRODUCT_NOT_EXISTS,
-
           status: 404,
         };
         return reject(errorMessage);
