@@ -1,9 +1,24 @@
 import ProductModel from '../models/ProductModel';
-import { IErrorProduct } from '../helpers/ProductErrors';
-import { ERROR_PRODUCT_ENUMS } from '../helpers/ProductErrors';
+
+import { IErrorProduct, ERROR_PRODUCTS_ENUMS } from '../helpers/ProductsErrors';
 import { IProduct } from './../models/ProductModel';
 import { Types } from 'mongoose';
 
+export const listProducts = ({ disabled = false }: { disabled: boolean }) => {
+  return new Promise(async (resolve, reject) => {
+    let errorMessage: IErrorProduct;
+    try {
+      resolve(await ProductModel.find({ disabled }));
+    } catch (err) {
+      errorMessage = {
+        type: err.type || 'UNKNOWN',
+        message: err.message,
+        status: err.status || 500,
+      };
+      reject(errorMessage);
+    }
+  });
+};
 export const createProduct = ({
   name,
   size,
@@ -22,7 +37,7 @@ export const createProduct = ({
       resolve(productObject);
     } catch (err) {
       const errorMessage: IErrorProduct = {
-        type: ERROR_PRODUCT_ENUMS.UNKNOWN,
+        type: ERROR_PRODUCTS_ENUMS.UNKNOWN,
         message: err.message,
         status: 500,
       };
@@ -48,7 +63,7 @@ export const editProduct = ({
     try {
       if (!Types.ObjectId.isValid(id)) {
         errorMessage = {
-          type: ERROR_PRODUCT_ENUMS.PRODUCT_DATA_INVALID,
+          type: ERROR_PRODUCTS_ENUMS.PRODUCT_DATA_INVALID,
           message: 'Id has invalid format!',
           status: 400,
         };
@@ -57,7 +72,7 @@ export const editProduct = ({
       const isExists: IProduct = await ProductModel.findById(id);
       if (!isExists) {
         errorMessage = {
-          type: ERROR_PRODUCT_ENUMS.PRODUCT_NOT_FOUND,
+          type: ERROR_PRODUCTS_ENUMS.PRODUCT_NOT_FOUND,
           status: 404,
         };
         return reject(errorMessage);
@@ -78,7 +93,7 @@ export const editProduct = ({
       );
     } catch (err) {
       errorMessage = {
-        type: ERROR_PRODUCT_ENUMS.UNKNOWN,
+        type: ERROR_PRODUCTS_ENUMS.UNKNOWN,
         status: 500,
         message: err.message,
       };
@@ -93,7 +108,7 @@ export const deleteProduct = ({ id }: IProduct['_id']) => {
     try {
       if (!Types.ObjectId.isValid(id)) {
         errorMessage = {
-          type: ERROR_PRODUCT_ENUMS.PRODUCT_DATA_INVALID,
+          type: ERROR_PRODUCTS_ENUMS.PRODUCT_DATA_INVALID,
           message: 'Id has invalid format!',
           status: 400,
         };
@@ -102,7 +117,7 @@ export const deleteProduct = ({ id }: IProduct['_id']) => {
       const isExists: IProduct = await ProductModel.findById(id);
       if (!isExists) {
         errorMessage = {
-          type: ERROR_PRODUCT_ENUMS.PRODUCT_NOT_EXISTS,
+          type: ERROR_PRODUCTS_ENUMS.PRODUCT_NOT_EXISTS,
           status: 404,
         };
         return reject(errorMessage);
@@ -110,7 +125,7 @@ export const deleteProduct = ({ id }: IProduct['_id']) => {
       return resolve(await isExists.updateOne({ disabled: true }));
     } catch (err) {
       errorMessage = {
-        type: ERROR_PRODUCT_ENUMS.PRODUCT_DATA_INVALID,
+        type: ERROR_PRODUCTS_ENUMS.PRODUCT_DATA_INVALID,
         message: err.message,
         status: 500,
       };
