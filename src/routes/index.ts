@@ -4,14 +4,15 @@ import productsRouter from './Products';
 import customerRouter from './Customer';
 import orderRouter from './Order';
 import errorRouter from './Errors';
+import { checkJWT } from '../middlewares/checkJwt';
 
 const router = Router();
 
 //Routes
 router.use('/users', usersRouter);
-router.use('/products', productsRouter);
-router.use('/customers', customerRouter);
-router.use('/orders', orderRouter);
-router.use('/errors', errorRouter);
+router.use('/products', [checkJWT], productsRouter);
+router.use('/customers', [checkJWT], customerRouter);
+router.use('/orders', [checkJWT], orderRouter);
+router.use('/errors', [checkJWT], errorRouter);
 
 export default router;
