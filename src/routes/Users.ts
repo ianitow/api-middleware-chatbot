@@ -1,5 +1,5 @@
-import { ERROR_USER_ENUMS, IErrorUsers } from './../helpers/UsersErrors';
-import { verifyJWT } from './../middlewares/checkJwt';
+import { ERROR_USERS_ENUMS, IErrorUser } from './../helpers/UsersErrors';
+import { checkJWT } from './../middlewares/checkJwt';
 import { IUser, UserProperties } from './../models/UserModel';
 import {
   deleteUser,
@@ -18,8 +18,8 @@ const userRouter = Router();
 userRouter
   .route('/')
   .get(async (req: Request, res: Response) => {
-    let errorMessage: IErrorUsers;
-    const showUsersDisabled: any = req.params.disabled || false;
+    let errorMessage: IErrorUser;
+    const showUsersDisabled = req.params.disabled ? true : false;
     listUsers({ disabled: showUsersDisabled })
       .then((users) => {
         res.json(users);
@@ -34,11 +34,11 @@ userRouter
       });
   })
   .post(async (req: Request, res: Response) => {
-    let errorMessage: IErrorUsers;
+    let errorMessage: IErrorUser;
     const { name, password, email }: IUser = req.body;
     if (!name || !password || !email) {
       errorMessage = {
-        type: ERROR_USER_ENUMS.DATA_INVALID,
+        type: ERROR_USERS_ENUMS.DATA_INVALID,
         message: 'Data invalid!',
         status: 400,
       };
@@ -60,7 +60,7 @@ userRouter
   });
 
 userRouter.route('/token').post(async (req: Request, res: Response) => {
-  let errorMessage: IErrorUsers;
+  let errorMessage: IErrorUser;
   const { password, email }: UserProperties = req.body;
   authUser({ email, password })
     .then((token) => {
@@ -78,12 +78,12 @@ userRouter.route('/token').post(async (req: Request, res: Response) => {
 userRouter
   .route('/:id')
   .put(async (req: Request, res: Response) => {
-    let errorMessage: IErrorUsers;
+    let errorMessage: IErrorUser;
     const { id }: IUser['_id'] = req.params;
     const { name, password, address, number_phone, email }: IUser = req.body;
     if (!id) {
       errorMessage = {
-        type: ERROR_USER_ENUMS.DATA_INVALID,
+        type: ERROR_USERS_ENUMS.DATA_INVALID,
         message: 'Data invalid!',
         status: 400,
       };
@@ -104,12 +104,12 @@ userRouter
     }
   })
   .delete(async (req: Request, res: Response) => {
-    let errorMessage: IErrorUsers;
+    let errorMessage: IErrorUser;
     const { id }: IUser['_id'] = req.params;
 
     if (!id) {
       errorMessage = {
-        type: ERROR_USER_ENUMS.DATA_INVALID,
+        type: ERROR_USERS_ENUMS.DATA_INVALID,
         message: 'Data invalid!',
         status: 400,
       };

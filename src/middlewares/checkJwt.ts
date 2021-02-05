@@ -1,45 +1,56 @@
+import { ERROR_TOKENS_ENUMS } from './../helpers/TokenErrors';
 import { IUser } from './../models/UserModel';
-import { SchemaTypes } from 'mongoose';
 import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
+import { IErrorToken } from '../helpers/TokenErrors';
 interface userJWT {
   userId: IUser['_id'];
 }
 
-/**
- *
- * @param req
- * @param res
- * @param next
- * @returns Novo token a cada request
- *
- */
-
-export const verifyJWT = (req: Request, res: Response, next: NextFunction) => {
+export const checkJWT = (req: Request, res: Response, next: NextFunction) => {
+  let errorMessage: IErrorToken;
+  let jwtPayload;
   if (!req.headers['authorization']) {
-    return res.status(400).send({ error: true, message: 'Token not provided' });
+    errorMessage = {
+      type: ERROR_TOKENS_ENUMS.TOKEN_NOT_PROVIDED,
+      message: 'Token not provided in header request!',
+      status: 400,
+    };
+    return res.status(<number>errorMessage.status).send(errorMessage);
   }
-  let jwtPayload: userJWT;
   const token = <string[]>(
     req.headers['authorization'].toString().split('Bearer ')
   );
   if (token.length != 2) {
-    return res.status(400).send({ error: true, message: 'Token mal-formed' });
+    errorMessage = {
+      type: ERROR_TOKENS_ENUMS.TOKEN_BAD_FORMAT,
+      status: 400,
+    };
+    return res.status(<number>errorMessage.status).send(errorMessage);
   }
 
-  if (!token)
-    return res.status(400).json({ error: true, message: 'No token provided.' });
+  if (!token) {
+    errorMessage = {
+      type: ERROR_TOKENS_ENUMS.TOKEN_NOT_PROVIDED,
+      status: 400,
+    };
+    return res.status(<number>errorMessage.status).send(errorMessage);
+  }
 
-  jwtPayload = <any>jwt.verify(
+  jwtPayload = jwt.verify(
     token[1],
     <string>process.env.SECRET,
     function (err, decoded) {
-      if (err)
-        return res
-          .status(401)
-          .json({ auth: false, message: 'Failed to authenticate token.' });
+      if (err) {
+        errorMessage = {
+          type: ERROR_TOKENS_ENUMS.UNKNOWN,
+          status: 400,
+          message: err.message,
+        };
+        return res.status(<number>errorMessage.status).send(errorMessage);
+      }
 
-      const { userId } = jwtPayload;
+      const { userId } = <userJWT>decoded;
       const newToken = jwt.sign({ userId }, <string>process.env.SECRET, {
         expiresIn: '1h',
       });

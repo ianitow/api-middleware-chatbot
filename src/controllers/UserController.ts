@@ -1,15 +1,22 @@
-import { IUser, UserProperties } from './../models/UserModel';
+import { ERROR_USERS_ENUMS, IErrorUser } from './../helpers/UsersErrors';
+import { IUser } from './../models/UserModel';
 import UserModel from '../models/UserModel';
-import { ObjectId, Types, Query, SchemaTypes } from 'mongoose';
+import { Types } from 'mongoose';
 import jwt from 'jsonwebtoken';
 import { compare } from 'bcrypt';
 
-export const listUsers = ({ disabled = false }: { disabled: Boolean }) => {
+export const listUsers = ({ disabled = false }: { disabled: boolean }) => {
   return new Promise(async (resolve, reject) => {
+    let errorMessage: IErrorUser;
     try {
       resolve(await UserModel.find({ disabled }));
     } catch (err) {
-      reject({ error: true, message: <Error>err.message });
+      errorMessage = {
+        type: err.type || 'UNKNOWN',
+        message: err.message,
+        status: err.status || 500,
+      };
+      reject(errorMessage);
     }
   });
 };
@@ -22,20 +29,31 @@ export const authUser = ({
   password: IUser['password'];
 }) => {
   return new Promise(async (resolve, reject) => {
+    let errorMessage: IErrorUser;
     const isExists: IUser = await UserModel.findOne({ email });
     if (!isExists) {
-      return reject({ status: 404, message: 'Email not exists' });
+      errorMessage = {
+        type: ERROR_USERS_ENUMS.EMAIL_NOT_EXISTS,
+        status: 404,
+      };
+      return reject(errorMessage);
     }
 
     await compare(password, <string>isExists.password, async (err, same) => {
       if (err) {
-        reject({
+        errorMessage = {
+          type: ERROR_USERS_ENUMS.UNKNOWN,
           status: 500,
-          message: 'Internal Server error',
-        });
+          message: err.message,
+        };
+        return reject(errorMessage);
       }
       if (!same) {
-        reject({ status: '401', message: 'Password invalid' });
+        errorMessage = {
+          type: ERROR_USERS_ENUMS.WRONG_EMAIL_OR_PASSWORD,
+          status: 401,
+        };
+        return reject(errorMessage);
       } else {
         const token = jwt.sign(
           { userId: isExists._id, email: email },
@@ -49,9 +67,14 @@ export const authUser = ({
 
 export const saveUser = (user: IUser) => {
   return new Promise(async (resolve, reject) => {
+    let errorMessage: IErrorUser;
     const isExists: IUser = await UserModel.findOne({ email: user.email });
     if (isExists) {
-      return reject({ status: 409, message: 'Email already in use!' });
+      errorMessage = {
+        type: ERROR_USERS_ENUMS.EMAIL_ALREADY_IN_USE,
+        status: 409,
+      };
+      return reject(errorMessage);
     }
     const UserObject: IUser = new UserModel(user);
 
@@ -61,19 +84,35 @@ export const saveUser = (user: IUser) => {
         resolve(UserObject);
       })
       .catch((err) => {
-        reject({ status: 500, message: err });
+        errorMessage = {
+          type: ERROR_USERS_ENUMS.UNKNOWN,
+          status: 500,
+          message: err.message,
+        };
+        return reject(errorMessage);
       });
   });
 };
 
 export const deleteUser = (id: IUser['_id']) => {
   return new Promise(async (resolve, reject) => {
+    let errorMessage: IErrorUser;
     if (!Types.ObjectId.isValid(id)) {
-      return reject({ status: 400, message: 'Id has invalid format!' });
+      errorMessage = {
+        type: ERROR_USERS_ENUMS.DATA_INVALID,
+        message: 'Id invalid!',
+        status: 400,
+      };
+      return reject(errorMessage);
     }
     const isExists: IUser = await UserModel.findById(id);
     if (!isExists) {
-      return reject({ status: 404, message: 'Id not exists!' });
+      errorMessage = {
+        type: ERROR_USERS_ENUMS.DATA_INVALID,
+        message: 'Id not exists!',
+        status: 400,
+      };
+      return reject(errorMessage);
     }
     return resolve(await isExists.updateOne({ disabled: true }));
   });
@@ -81,12 +120,23 @@ export const deleteUser = (id: IUser['_id']) => {
 
 export const editUser = ({ name, email, id, address, number_phone }: any) => {
   return new Promise(async (resolve, reject) => {
+    let errorMessage: IErrorUser;
     if (!Types.ObjectId.isValid(id)) {
-      return reject({ status: 400, message: 'Id has invalid format!' });
+      errorMessage = {
+        type: ERROR_USERS_ENUMS.DATA_INVALID,
+        message: 'Id invalid!',
+        status: 400,
+      };
+      return reject(errorMessage);
     }
     const isExists: IUser = await UserModel.findById(id);
     if (!isExists) {
-      return reject({ status: 404, message: 'Id not exists!' });
+      errorMessage = {
+        type: ERROR_USERS_ENUMS.DATA_INVALID,
+        message: 'Id not exists!',
+        status: 400,
+      };
+      return reject(errorMessage);
     }
 
     return resolve(

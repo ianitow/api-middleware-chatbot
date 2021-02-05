@@ -1,39 +1,38 @@
-import { ERROR_PRODUCT_ENUMS } from './../helpers/ProductErrors';
 import { Router, Request, Response } from 'express';
 import ProductModel, { IProduct } from './../models/ProductModel';
 import {
   createProduct,
   deleteProduct,
   editProduct,
+  listProducts,
 } from './../controllers/ProductController';
-import { IErrorProduct } from '../helpers/ProductErrors';
+import { ERROR_PRODUCTS_ENUMS, IErrorProduct } from '../helpers/ProductsErrors';
 
 const productRouter = Router();
 productRouter
   .route('/')
   .get(async (req: Request, res: Response) => {
-    const showProductsDisabled: any = req.params.disabled || false;
     let errorMessage: IErrorProduct;
-    await ProductModel.find(
-      { disabled: showProductsDisabled },
-      (err, products) => {
-        if (err) {
-          errorMessage = {
-            type: ERROR_PRODUCT_ENUMS.UNKNOWN,
-            message: err.message,
-          };
-          return res.status(500).json(errorMessage);
-        }
-        res.json(products);
-      }
-    );
+    const showProductsDisabled = req.params.disabled ? true : false;
+    listProducts({ disabled: showProductsDisabled })
+      .then((users) => {
+        res.json(users);
+      })
+      .catch((err) => {
+        errorMessage = {
+          type: err.type,
+          message: err.message,
+          status: err.status || 500,
+        };
+        return res.status(<number>errorMessage.status).json(errorMessage);
+      });
   })
   .post(async (req: Request, res: Response) => {
     let errorMessage: IErrorProduct;
     const { name, size, quantity, price }: IProduct = req.body;
     if (!name || !size || !quantity || !price) {
       errorMessage = {
-        type: ERROR_PRODUCT_ENUMS.PRODUCT_DATA_INVALID,
+        type: ERROR_PRODUCTS_ENUMS.PRODUCT_DATA_INVALID,
         status: 400,
       };
       return res.status(400).json(errorMessage);
@@ -44,7 +43,7 @@ productRouter
         })
         .catch((error) => {
           errorMessage = {
-            type: ERROR_PRODUCT_ENUMS.UNKNOWN,
+            type: ERROR_PRODUCTS_ENUMS.UNKNOWN,
             message: error.message,
           };
           return res.status(error.status).json(errorMessage);
@@ -60,7 +59,7 @@ productRouter
 
     if (!name || !size || !quantity || !price) {
       errorMessage = {
-        type: ERROR_PRODUCT_ENUMS.PRODUCT_DATA_INVALID,
+        type: ERROR_PRODUCTS_ENUMS.PRODUCT_DATA_INVALID,
       };
       return res.status(400).json(errorMessage);
     } else {
@@ -70,7 +69,7 @@ productRouter
         })
         .catch((error) => {
           errorMessage = {
-            type: error.type || ERROR_PRODUCT_ENUMS.UNKNOWN,
+            type: error.type || ERROR_PRODUCTS_ENUMS.UNKNOWN,
             message: error.message,
           };
           return res.status(error.status).json(errorMessage);
@@ -83,7 +82,7 @@ productRouter
 
     if (!id) {
       errorMessage = {
-        type: ERROR_PRODUCT_ENUMS.PRODUCT_DATA_INVALID,
+        type: ERROR_PRODUCTS_ENUMS.PRODUCT_DATA_INVALID,
       };
       return res.status(400).json(errorMessage);
     } else {
@@ -95,7 +94,7 @@ productRouter
         })
         .catch((error) => {
           errorMessage = {
-            type: error.type || ERROR_PRODUCT_ENUMS.UNKNOWN,
+            type: error.type || ERROR_PRODUCTS_ENUMS.UNKNOWN,
             message: error.message,
           };
           return res.status(error.status).json(errorMessage);

@@ -1,7 +1,7 @@
 import { ICustomer } from './CustomerModel';
 import { IUser } from './UserModel';
 import { IProduct } from './ProductModel';
-import { Schema, model, Document, SchemaTypes } from 'mongoose';
+import { Schema, model, Document } from 'mongoose';
 export enum STATUS_ORDER_ENUM {
   PENDING = 'PENDING',
   CANCELLED = 'CANCELED',
@@ -31,7 +31,7 @@ const Order: Schema = new Schema(
     status: {
       type: String,
       enum: ['PENDING', 'WAITING_PAYMENT', 'FINISHED', 'CANCELLED'],
-      default: 0,
+      default: STATUS_ORDER_ENUM.PENDING,
     },
     products: [
       {
