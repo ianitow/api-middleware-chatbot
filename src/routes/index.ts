@@ -13,6 +13,6 @@ router.use('/users', usersRouter);
 router.use('/products', [checkJWT], productsRouter);
 router.use('/customers', [checkJWT], customerRouter);
 router.use('/orders', [checkJWT], orderRouter);
-router.use('/errors', [checkJWT], errorRouter);
+router.use('/errors', errorRouter);
 
 export default router;
