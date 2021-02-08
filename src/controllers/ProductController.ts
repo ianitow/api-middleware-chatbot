@@ -19,6 +19,39 @@ export const listProducts = ({ disabled = false }: { disabled: boolean }) => {
     }
   });
 };
+export const listProductInfo = ({ id }: { id: IProduct['_id'] }) => {
+  return new Promise(async (resolve, reject) => {
+    let errorMessage: IErrorProduct;
+    try {
+      if (!Types.ObjectId.isValid(id)) {
+        errorMessage = {
+          type: ERROR_PRODUCTS_ENUMS.PRODUCT_DATA_INVALID,
+          message: 'Id has invalid format!',
+          status: 400,
+        };
+        return reject(errorMessage);
+      }
+      const isExists: IProduct = await ProductModel.findById(id);
+      if (!isExists) {
+        errorMessage = {
+          type: ERROR_PRODUCTS_ENUMS.PRODUCT_NOT_FOUND,
+          status: 404,
+        };
+        return reject(errorMessage);
+      }
+
+      return resolve(ProductModel.findById(id));
+    } catch (err) {
+      errorMessage = {
+        type: ERROR_PRODUCTS_ENUMS.UNKNOWN,
+        status: 500,
+        message: err.message,
+      };
+      return reject(errorMessage);
+    }
+  });
+};
+
 export const createProduct = ({
   name,
   size,

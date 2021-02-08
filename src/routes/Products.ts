@@ -5,6 +5,7 @@ import {
   deleteProduct,
   editProduct,
   listProducts,
+  listProductInfo,
 } from './../controllers/ProductController';
 import { ERROR_PRODUCTS_ENUMS, IErrorProduct } from '../helpers/ProductsErrors';
 
@@ -15,8 +16,8 @@ productRouter
     let errorMessage: IErrorProduct;
     const showProductsDisabled = req.params.disabled ? true : false;
     listProducts({ disabled: showProductsDisabled })
-      .then((users) => {
-        res.json(users);
+      .then((products) => {
+        res.json(products);
       })
       .catch((err) => {
         errorMessage = {
@@ -52,6 +53,22 @@ productRouter
   });
 productRouter
   .route('/:id')
+  .get(async (req: Request, res: Response) => {
+    let errorMessage: IErrorProduct;
+    const id = req.params.id;
+    listProductInfo({ id })
+      .then((products) => {
+        res.json(products);
+      })
+      .catch((err) => {
+        errorMessage = {
+          type: err.type,
+          message: err.message,
+          status: err.status || 500,
+        };
+        return res.status(<number>errorMessage.status).json(errorMessage);
+      });
+  })
   .put(async (req: Request, res: Response) => {
     const { id }: IProduct['_id'] = req.params;
     const { name, size, quantity, price }: IProduct = req.body;
