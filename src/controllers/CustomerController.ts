@@ -1,6 +1,23 @@
+import { IErrorCustomer } from './../helpers/CustomersErrors';
 import { ICustomer } from './../models/CustomerModel';
-import CustomerModel from '../models/CustomerModel';
 import { Types } from 'mongoose';
+import CustomerModel from '../models/CustomerModel';
+
+export const listCostumers = ({ disabled = false }: { disabled: boolean }) => {
+  return new Promise(async (resolve, reject) => {
+    let errorMessage: IErrorCustomer;
+    try {
+      resolve(await CustomerModel.find({ disabled }));
+    } catch (err) {
+      errorMessage = {
+        type: err.type || 'UNKNOWN',
+        message: err.message,
+        status: err.status || 500,
+      };
+      reject(errorMessage);
+    }
+  });
+};
 export const createCustomer = ({
   name,
   number_phone,

@@ -1,4 +1,7 @@
+import { IErrorCustomer } from './../helpers/CustomersErrors';
+
 import {
+  listCostumers,
   createCustomer,
   deleteCostumer,
   editCustomer,
@@ -12,9 +15,20 @@ const customerRouter = Router();
 customerRouter
   .route('/')
   .get(async (req: Request, res: Response) => {
-    await CustomerModel.find({}, (err, customer: ICustomer) => {
-      res.json(customer);
-    });
+    let errorMessage: IErrorCustomer;
+    const showCustomersDisabled = req.params.disabled ? true : false;
+    listCostumers({ disabled: showCustomersDisabled })
+      .then((customers) => {
+        res.json(customers);
+      })
+      .catch((err) => {
+        errorMessage = {
+          type: err.type,
+          message: err.message,
+          status: err.status || 500,
+        };
+        return res.status(<number>errorMessage.status).json(errorMessage);
+      });
   })
   .post(async (req: Request, res: Response) => {
     const { name, address, number_phone }: ICustomer = req.body;

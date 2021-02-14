@@ -1,0 +1,9 @@
+import { IError } from './index';
+export enum ERROR_CUSTOMERS_ENUMS {
+  CUSTOMER_NOT_FOUND = 'CUSTOMER_NOT_FOUND',
+  CUSTOMER_NOT_EXISTS = 'CUSTOMER_NOT_EXISTS',
+  CUSTOMER_DATA_INVALID = 'CUSTOMER_DATA_INVALID',
+  UNKNOWN = 'UNKNOWN',
+}
+
+export interface IErrorCustomer extends IError<ERROR_CUSTOMERS_ENUMS> {}
