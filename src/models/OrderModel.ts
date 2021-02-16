@@ -46,6 +46,15 @@ const Order: Schema = new Schema(
     notes: {
       type: String,
     },
+    created_at: {
+      type: Date,
+      default: Date.now,
+      select: false,
+    },
+    updated_at: {
+      type: Date,
+      default: Date.now,
+    },
   },
 
   { collection: 'orders' }
