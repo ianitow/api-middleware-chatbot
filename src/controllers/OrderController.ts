@@ -1,14 +1,17 @@
-import { Schema } from 'mongoose';
 import ProductModel from './../models/ProductModel';
 import CustomerModel, { ICustomer } from './../models/CustomerModel';
 import { IUser } from './../models/UserModel';
 import UserModel from '../models/UserModel';
 import OrderModel, { IOrder, STATUS_ORDER_ENUM } from './../models/OrderModel';
-export const listOrder = ({ status = STATUS_ORDER_ENUM.PENDING }) => {
+export const listOrder = ({ status }: { status: STATUS_ORDER_ENUM }) => {
   return new Promise(async (resolve, reject) => {
+    const findByStatus = status ? status : {};
     try {
       resolve(
-        await OrderModel.find({ status }).populate('products.product_id')
+        await OrderModel.find(findByStatus)
+          .populate('customer_id', ['name', 'address', 'number_phone'])
+          .populate('products.product_id', ['name', 'size', 'price'])
+          .sort('created_at')
       );
     } catch (err) {
       reject({ error: true, message: <Error>err.message });
@@ -59,7 +62,11 @@ export const createOrder = ({
         });
         return resolve(
           await orderObject.save().then((doc) => {
-            return doc.populate('products.product_id').execPopulate();
+            return doc
+
+              .populate('products.product_id', 'name size price')
+              .populate('customer_id', 'name address number_phone')
+              .execPopulate();
           })
         );
       }
