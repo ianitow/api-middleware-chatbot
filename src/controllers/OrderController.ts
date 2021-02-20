@@ -91,11 +91,49 @@ export const editOrder = ({
       if (!isExistsOrder) {
         return reject({ status: 404, message: 'Id not exists!' });
       }
-      if (!status) {
-        return reject({ status: 400, message: 'Status not provided' });
+      if (!status || !STATUS_ORDER_ENUM[status]) {
+        return reject({
+          status: 400,
+          message: 'Status not provided or invalid',
+        });
       }
       return resolve(
         OrderModel.findByIdAndUpdate(id, { status, notes }, { new: true })
+      );
+    } catch (err) {
+      return reject({ status: 500, message: <Error>err.message });
+    }
+  });
+};
+export const patchOrder = ({
+  id,
+  status,
+}: {
+  id: IOrder['_id'];
+  status: IOrder['status'];
+}) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const isExistsOrder: IOrder = await OrderModel.findById(id);
+      if (!isExistsOrder) {
+        return reject({ status: 404, message: 'Id not exists!' });
+      }
+      if (!status) {
+        return reject({ status: 400, message: 'Status not provided' });
+      }
+      if (!status || !STATUS_ORDER_ENUM[status]) {
+        return reject({
+          status: 400,
+          message: 'Status not provided or invalid',
+        });
+      }
+
+      return resolve(
+        OrderModel.findByIdAndUpdate(
+          id,
+          { status },
+          { useFindAndModify: false, new: true }
+        )
       );
     } catch (err) {
       return reject({ status: 500, message: <Error>err.message });

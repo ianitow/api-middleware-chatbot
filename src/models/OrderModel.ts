@@ -4,7 +4,7 @@ import { IProduct } from './ProductModel';
 import { Schema, model, Document } from 'mongoose';
 export enum STATUS_ORDER_ENUM {
   PENDING = 'PENDING',
-  CANCELLED = 'CANCELED',
+  CANCELLED = 'CANCELLED',
   WAITING_PAYMENT = 'WAITING_PAYMENT',
   FINISHED = 'FINISHED',
 }
@@ -35,6 +35,7 @@ const Order: Schema = new Schema(
     status: {
       type: String,
       enum: ['PENDING', 'WAITING_PAYMENT', 'FINISHED', 'CANCELLED'],
+      required: true,
       default: STATUS_ORDER_ENUM.PENDING,
     },
     products: [
