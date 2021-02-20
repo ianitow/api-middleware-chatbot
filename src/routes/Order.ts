@@ -1,9 +1,16 @@
+import { IErrorOrder } from './../helpers/OrdersErrors';
 import { STATUS_ORDER_ENUM, IOrder } from './../models/OrderModel';
-import { listOrder, createOrder } from './../controllers/OrderController';
-import { ICustomer } from './../models/CustomerModel';
-
+import {
+  listOrder,
+  createOrder,
+  patchOrder,
+} from './../controllers/OrderController';
 import { Router, Request, Response } from 'express';
 
+type IOrderPatch = {
+  id: IOrder['_id'];
+  status: STATUS_ORDER_ENUM;
+};
 const orderRouter = Router();
 
 orderRouter
@@ -37,5 +44,22 @@ orderRouter
         });
     }
   });
+orderRouter.route('/:id').patch(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { status = STATUS_ORDER_ENUM.PENDING } = req.body;
+  let errorMessage: IErrorOrder;
 
+  patchOrder({ id, status })
+    .then((order) => {
+      res.json(order);
+    })
+    .catch((err) => {
+      errorMessage = {
+        type: err.type,
+        message: err.message,
+        status: err.status || 500,
+      };
+      return res.status(<number>errorMessage.status).json(errorMessage);
+    });
+});
 export default orderRouter;
