@@ -1,4 +1,4 @@
-import ProductModel from './../models/ProductModel';
+import ProductModel, { IProduct } from './../models/ProductModel';
 import CustomerModel, { ICustomer } from './../models/CustomerModel';
 import { IUser } from './../models/UserModel';
 import UserModel from '../models/UserModel';
@@ -10,7 +10,7 @@ export const listOrder = ({ status }: { status: STATUS_ORDER_ENUM }) => {
       resolve(
         await OrderModel.find(findByStatus)
           .populate('customer_id', ['name', 'address', 'number_phone'])
-          .populate('products.product_id', ['name', 'size', 'price'])
+          .populate('products.product_id', ['name', 'size'])
           .sort('created_at')
       );
     } catch (err) {
@@ -42,34 +42,35 @@ export const createOrder = ({
         return reject({ status: 404, message: 'Id not exists for customer!' });
       }
 
-      for (const iterator of products) {
-        const isExistsProduct = await (<IOrder['products']>(
-          ProductModel.findById(iterator.product_id)
-        ));
+      for (const product of products) {
+        const isExistsProduct: IProduct = await ProductModel.findById(
+          product.product_id
+        );
         if (!isExistsProduct) {
           return reject({
             status: 404,
-            message: `Product ${iterator.product_id} not exists`,
+            message: `Product ${product.product_id} not exists`,
           });
+        } else {
+          product.price = isExistsProduct.price;
         }
-
-        const orderObject = new OrderModel({
-          status: STATUS_ORDER_ENUM.PENDING,
-          user_id,
-          customer_id,
-          products,
-          notes,
-        });
-        return resolve(
-          await orderObject.save().then((doc) => {
-            return doc
-
-              .populate('products.product_id', 'name size price')
-              .populate('customer_id', 'name address number_phone')
-              .execPopulate();
-          })
-        );
       }
+      const orderObject = new OrderModel({
+        status: STATUS_ORDER_ENUM.PENDING,
+        user_id,
+        customer_id,
+        products,
+        notes,
+      });
+      return resolve(
+        await orderObject.save().then((doc) => {
+          return doc
+
+            .populate('products.product_id', 'name size')
+            .populate('customer_id', 'name address number_phone')
+            .execPopulate();
+        })
+      );
     } catch (err) {
       return reject({ status: 500, message: <Error>err.message });
     }
