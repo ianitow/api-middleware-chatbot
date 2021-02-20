@@ -12,7 +12,11 @@ export interface IOrder extends Document {
   user_id: IUser['_id'];
   status: STATUS_ORDER_ENUM;
   customer_id: ICustomer['_id'];
-  products: Array<{ product_id: IProduct['_id']; quantity: number }>;
+  products: Array<{
+    product_id: IProduct['_id'];
+    quantity: number;
+    price: number;
+  }>;
   notes: String;
 }
 
@@ -40,6 +44,7 @@ const Order: Schema = new Schema(
           ref: 'Product',
           required: true,
         },
+        price: { type: Number, required: true },
         quantity: { type: Number, required: true },
       },
     ],
@@ -57,7 +62,21 @@ const Order: Schema = new Schema(
     },
   },
 
-  { collection: 'orders' }
+  {
+    collection: 'orders',
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
 );
+Order.virtual('total_price').get(function (this: {
+  products: IOrder['products'];
+}) {
+  const totalPrice = <number>(
+    this.products
+      .map((product) => product.price * product.quantity)
+      .reduce((acumulator, current) => acumulator + current)
+  );
+  return totalPrice.toFixed(2);
+});
 
 export default model<IOrder>('Order', Order);
