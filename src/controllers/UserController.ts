@@ -140,13 +140,17 @@ export const editUser = ({ name, email, id, address, number_phone }: any) => {
     }
 
     return resolve(
-      await UserModel.findByIdAndUpdate(id, {
-        name,
-        address,
-        number_phone,
-        email,
-        updated_at: new Date(Date.now()),
-      })
+      await UserModel.findByIdAndUpdate(
+        id,
+        {
+          name,
+          address,
+          number_phone,
+          email,
+          updated_at: new Date(Date.now()),
+        },
+        { useFindAndModify: false }
+      )
     );
   });
 };

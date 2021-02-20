@@ -121,7 +121,7 @@ export const editProduct = ({
             price,
             updated_at: Date.now(),
           },
-          { new: true }
+          { new: true, useFindAndModify: false }
         )
       );
     } catch (err) {

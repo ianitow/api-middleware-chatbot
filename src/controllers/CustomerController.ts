@@ -66,7 +66,7 @@ export const editCustomer = ({
             number_phone,
             address,
           },
-          { new: true }
+          { new: true, useFindAndModify: false }
         )
       );
     } catch (err) {
