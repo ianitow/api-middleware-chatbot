@@ -51,9 +51,19 @@ export const createOrder = ({
             status: 404,
             message: `Product ${product.product_id} not exists`,
           });
-        } else {
-          product.price = isExistsProduct.price;
         }
+        let newQuantity = isExistsProduct.quantity - product.quantity;
+        if (newQuantity < 0) {
+          return reject({
+            status: 406,
+            message: `Product ${isExistsProduct.name} is enough`,
+          });
+        }
+        await isExistsProduct.updateOne({
+          quantity: newQuantity,
+        });
+
+        product.price = isExistsProduct.price;
       }
       const orderObject = new OrderModel({
         status: STATUS_ORDER_ENUM.PENDING,
@@ -97,6 +107,22 @@ export const editOrder = ({
           message: 'Status not provided or invalid',
         });
       }
+      if (
+        status == STATUS_ORDER_ENUM.CANCELLED &&
+        isExistsOrder.status != STATUS_ORDER_ENUM.CANCELLED
+      ) {
+        isExistsOrder.products.forEach(async ({ product_id, quantity }) => {
+          await ProductModel.findByIdAndUpdate(
+            product_id,
+            {
+              $inc: {
+                quantity,
+              },
+            },
+            { new: true }
+          );
+        });
+      }
       return resolve(
         OrderModel.findByIdAndUpdate(id, { status, notes }, { new: true })
       );
@@ -127,7 +153,22 @@ export const patchOrder = ({
           message: 'Status not provided or invalid',
         });
       }
-
+      if (
+        status == STATUS_ORDER_ENUM.CANCELLED &&
+        isExistsOrder.status != STATUS_ORDER_ENUM.CANCELLED
+      ) {
+        isExistsOrder.products.forEach(async ({ product_id, quantity }) => {
+          await ProductModel.findByIdAndUpdate(
+            product_id,
+            {
+              $inc: {
+                quantity,
+              },
+            },
+            { new: true }
+          );
+        });
+      }
       return resolve(
         OrderModel.findByIdAndUpdate(
           id,
