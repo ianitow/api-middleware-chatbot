@@ -17,7 +17,7 @@ const userRouter = Router();
 
 userRouter
   .route('/')
-  .get(async (req: Request, res: Response) => {
+  .get(checkJWT, async (req: Request, res: Response) => {
     let errorMessage: IErrorUser;
     const showUsersDisabled = req.params.disabled ? true : false;
     listUsers({ disabled: showUsersDisabled })
@@ -77,7 +77,7 @@ userRouter.route('/token').post(async (req: Request, res: Response) => {
 });
 userRouter
   .route('/:id')
-  .put(async (req: Request, res: Response) => {
+  .put(checkJWT, async (req: Request, res: Response) => {
     let errorMessage: IErrorUser;
     const { id }: IUser['_id'] = req.params;
     const { name, password, address, number_phone, email }: IUser = req.body;
@@ -103,7 +103,7 @@ userRouter
         });
     }
   })
-  .delete(async (req: Request, res: Response) => {
+  .delete(checkJWT, async (req: Request, res: Response) => {
     let errorMessage: IErrorUser;
     const { id }: IUser['_id'] = req.params;
 
