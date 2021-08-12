@@ -4,6 +4,7 @@ import {
   listOrder,
   createOrder,
   patchOrder,
+  editOrder,
 } from './../controllers/OrderController';
 import { Router, Request, Response } from 'express';
 
@@ -29,11 +30,11 @@ orderRouter
       });
   })
   .post((req: Request, res: Response) => {
-    const { user_id, customer_id, products }: IOrder = req.body;
-    if (!user_id || !customer_id || !products) {
+    const { customer_id, products }: IOrder = req.body;
+    if (!customer_id || !products) {
       return res.status(400).json({ error: true, message: 'Data invalid!' });
     } else {
-      createOrder(req.body)
+      createOrder({ ...req.body, user_id: req.headers.user_id })
         .then((order) => {
           return res.status(201).json(order);
         })
@@ -44,22 +45,42 @@ orderRouter
         });
     }
   });
-orderRouter.route('/:id').patch(async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const { status = STATUS_ORDER_ENUM.PENDING } = req.body;
-  let errorMessage: IErrorOrder;
+orderRouter
+  .route('/:id')
+  .patch(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { status = STATUS_ORDER_ENUM.PENDING } = req.body;
+    let errorMessage: IErrorOrder;
 
-  patchOrder({ id, status })
-    .then((order) => {
-      res.json(order);
-    })
-    .catch((err) => {
-      errorMessage = {
-        type: err.type,
-        message: err.message,
-        status: err.status || 500,
-      };
-      return res.status(<number>errorMessage.status).json(errorMessage);
-    });
-});
+    patchOrder({ id, status })
+      .then((order) => {
+        res.json(order);
+      })
+      .catch((err) => {
+        errorMessage = {
+          type: err.type,
+          message: err.message,
+          status: err.status || 500,
+        };
+        return res.status(<number>errorMessage.status).json(errorMessage);
+      });
+  })
+  .put(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { status = STATUS_ORDER_ENUM.PENDING, notes = '' } = req.body;
+    let errorMessage: IErrorOrder;
+
+    editOrder({ id, status, notes })
+      .then((order) => {
+        res.json(order);
+      })
+      .catch((err) => {
+        errorMessage = {
+          type: err.type,
+          message: err.message,
+          status: err.status || 500,
+        };
+        return res.status(<number>errorMessage.status).json(errorMessage);
+      });
+  });
 export default orderRouter;
