@@ -8,6 +8,7 @@ import routes from './routes';
 config();
 const app = express();
 const db = Database();
+const PORT = process.env.PORT || 3000;
 
 app.use(helmet());
 app.use(cors());
@@ -18,6 +19,6 @@ app.use(routes);
 app.get('/', (req, res, next) => {
   res.send('Hello world');
 });
-app.listen(3000, () => {
+app.listen(PORT, () => {
   console.log('✅ Express Connected');
 });
