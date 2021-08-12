@@ -46,7 +46,7 @@ export const checkJWT = (req: Request, res: Response, next: NextFunction) => {
         expiresIn: '1h',
       });
       res.setHeader('authorization', `Bearer ${newToken}`);
-      res.setHeader('userId', userId);
+      req.headers.user_id = userId;
       next();
     }
   );
