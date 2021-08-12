@@ -31,11 +31,11 @@ export const createOrder = ({
 }) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const isExistsUser: IUser = await UserModel.findById(user_id);
+      const isExistsUser: IUser | null = await UserModel.findById(user_id);
       if (!isExistsUser) {
         return reject({ status: 404, message: 'Id not exists for user!' });
       }
-      const isExistsCustomer: ICustomer = await CustomerModel.findById(
+      const isExistsCustomer: ICustomer | null = await CustomerModel.findById(
         customer_id
       );
       if (!isExistsCustomer) {
@@ -43,7 +43,7 @@ export const createOrder = ({
       }
 
       for (const product of products) {
-        const isExistsProduct: IProduct = await ProductModel.findById(
+        const isExistsProduct: IProduct | null = await ProductModel.findById(
           product.product_id
         );
         if (!isExistsProduct) {
@@ -97,7 +97,7 @@ export const editOrder = ({
 }) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const isExistsOrder: IOrder = await OrderModel.findById(id);
+      const isExistsOrder: IOrder | null = await OrderModel.findById(id);
       if (!isExistsOrder) {
         return reject({ status: 404, message: 'Id not exists!' });
       }
@@ -140,7 +140,7 @@ export const patchOrder = ({
 }) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const isExistsOrder: IOrder = await OrderModel.findById(id);
+      const isExistsOrder: IOrder | null = await OrderModel.findById(id);
       if (!isExistsOrder) {
         return reject({ status: 404, message: 'Id not exists!' });
       }

@@ -53,7 +53,7 @@ export const editCustomer = ({
       if (!Types.ObjectId.isValid(id)) {
         return reject({ status: 400, message: 'Id has invalid format!' });
       }
-      const isExists: ICustomer = await CustomerModel.findById(id);
+      const isExists: ICustomer | null = await CustomerModel.findById(id);
       if (!isExists) {
         return reject({ status: 404, message: 'Id not exists!' });
       }
@@ -81,7 +81,7 @@ export const deleteCostumer = ({ id }: ICustomer['_id']) => {
       if (!Types.ObjectId.isValid(id)) {
         return reject({ status: 400, message: 'Id has invalid format!' });
       }
-      const isExists: ICustomer = await CustomerModel.findById(id);
+      const isExists: ICustomer | null = await CustomerModel.findById(id);
       if (!isExists) {
         return reject({ status: 404, message: 'Id not exists!' });
       }

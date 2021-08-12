@@ -31,7 +31,7 @@ export const listProductInfo = ({ id }: { id: IProduct['_id'] }) => {
         };
         return reject(errorMessage);
       }
-      const isExists: IProduct = await ProductModel.findById(id);
+      const isExists: IProduct | null = await ProductModel.findById(id);
       if (!isExists) {
         errorMessage = {
           type: ERROR_PRODUCTS_ENUMS.PRODUCT_NOT_FOUND,
@@ -102,7 +102,7 @@ export const editProduct = ({
         };
         return reject(errorMessage);
       }
-      const isExists: IProduct = await ProductModel.findById(id);
+      const isExists: IProduct | null = await ProductModel.findById(id);
       if (!isExists) {
         errorMessage = {
           type: ERROR_PRODUCTS_ENUMS.PRODUCT_NOT_FOUND,
@@ -147,7 +147,7 @@ export const deleteProduct = ({ id }: IProduct['_id']) => {
         };
         return reject(errorMessage);
       }
-      const isExists: IProduct = await ProductModel.findById(id);
+      const isExists: IProduct | null = await ProductModel.findById(id);
       if (!isExists) {
         errorMessage = {
           type: ERROR_PRODUCTS_ENUMS.PRODUCT_NOT_EXISTS,

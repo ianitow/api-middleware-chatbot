@@ -30,7 +30,7 @@ export const authUser = ({
 }) => {
   return new Promise(async (resolve, reject) => {
     let errorMessage: IErrorUser;
-    const isExists: IUser = await UserModel.findOne({ email });
+    const isExists: IUser | null = await UserModel.findOne({ email });
     if (!isExists) {
       errorMessage = {
         type: ERROR_USERS_ENUMS.EMAIL_NOT_EXISTS,
@@ -68,7 +68,9 @@ export const authUser = ({
 export const saveUser = (user: IUser) => {
   return new Promise(async (resolve, reject) => {
     let errorMessage: IErrorUser;
-    const isExists: IUser = await UserModel.findOne({ email: user.email });
+    const isExists: IUser | null = await UserModel.findOne({
+      email: user.email,
+    });
     if (isExists) {
       errorMessage = {
         type: ERROR_USERS_ENUMS.EMAIL_ALREADY_IN_USE,
@@ -105,7 +107,7 @@ export const deleteUser = (id: IUser['_id']) => {
       };
       return reject(errorMessage);
     }
-    const isExists: IUser = await UserModel.findById(id);
+    const isExists: IUser | null = await UserModel.findById(id);
     if (!isExists) {
       errorMessage = {
         type: ERROR_USERS_ENUMS.DATA_INVALID,
@@ -129,7 +131,7 @@ export const editUser = ({ name, email, id, address, number_phone }: any) => {
       };
       return reject(errorMessage);
     }
-    const isExists: IUser = await UserModel.findById(id);
+    const isExists: IUser | null = await UserModel.findById(id);
     if (!isExists) {
       errorMessage = {
         type: ERROR_USERS_ENUMS.DATA_INVALID,
