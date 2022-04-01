@@ -1,18 +1,9 @@
 import { Router } from 'express';
-import usersRouter from './Users';
-import productsRouter from './Products';
-import customerRouter from './Customer';
-import orderRouter from './Order';
-import errorRouter from './Errors';
-import { checkJWT } from '../middlewares/checkJwt';
+import ratingRouter from './Rating';
 
 const router = Router();
 
 //Routes
-router.use('/users', usersRouter);
-router.use('/products', [checkJWT], productsRouter);
-router.use('/customers', [checkJWT], customerRouter);
-router.use('/orders', [checkJWT], orderRouter);
-router.use('/errors', errorRouter);
+router.use('/ratings', ratingRouter);
 
 export default router;
